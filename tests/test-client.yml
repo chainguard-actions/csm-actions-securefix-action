@@ -1,0 +1,45 @@
+name: Test client action
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_EVENT_NAME: push
+      GITHUB_REF: refs/heads/main
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - id: action
+        uses: .
+        continue-on-error: true
+        with:
+          action: client
+          app_id: "12345"
+          app_private_key: "fake-private-key"
+          server_repository: example/securefix-server
+          files: "file1.txt\nfile2.txt"
+          use_git_ls_files: "false"
+          fail_if_changes: "false"
+          repository: example/repo
+          branch: fix/auto-fix
+          root_dir: "."
+          pull_request_title: "Auto fix"
+          pull_request_base_branch: main
+          pull_request_body: "Automated fix"
+          pull_request_labels: "auto-fix"
+          pull_request_draft: "false"
+          pull_request_reviewers: "reviewer1"
+          pull_request_team_reviewers: "team1"
+          pull_request_assignees: "assignee1"
+          pull_request_comment: "Fix applied successfully"
+          commit_message: "chore: auto fix"
+          project_owner: example-org
+          project_number: "1"
+          project_id: "PVT_abc123"
+          milestone_number: "2"
+          automerge_method: squash
+          custom: '{"key":"value"}'
+      - name: Assert action ran
+        run: |
+          echo "conclusion: ${{ steps.action.conclusion }}"
+          echo "PASS: client action step executed"

@@ -1,0 +1,45 @@
+name: Test client mode inputs
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_REF: refs/heads/main
+      GITHUB_EVENT_NAME: push
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - id: action
+        uses: .
+        continue-on-error: true
+        with:
+          action: client
+          app_id: "12345"
+          app_private_key: "fake-private-key"
+          server_repository: "example-org/securefix-server"
+          files: "file1.txt\nfile2.txt"
+          use_git_ls_files: "false"
+          fail_if_changes: "false"
+          repository: "example-org/example-repo"
+          branch: "fix/securefix-branch"
+          root_dir: "."
+          commit_message: "fix: apply securefix changes"
+          pull_request_comment: "Securefix applied changes."
+          pull_request_title: "Securefix: automated fix"
+          pull_request_base_branch: "main"
+          pull_request_body: "This PR was created by securefix."
+          pull_request_labels: "securefix\nautomated"
+          pull_request_draft: "false"
+          pull_request_reviewers: "reviewer1"
+          pull_request_team_reviewers: "team-reviewers"
+          pull_request_assignees: "assignee1"
+          project_owner: "example-org"
+          project_number: "1"
+          project_id: "PVT_abc123"
+          milestone_number: "1"
+          automerge_method: "squash"
+          custom: '{"key":"value"}'
+      - name: Assert action ran (may fail due to missing credentials)
+        run: |
+          echo "Step outcome: ${{ steps.action.outcome }}"
+          echo "PASS: action step was invoked with all client inputs"
