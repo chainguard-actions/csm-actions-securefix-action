@@ -1,0 +1,38 @@
+---
+# cmdx - task runner
+# https://github.com/suzuki-shunsuke/cmdx
+tasks:
+  - name: release
+    short: r
+    description: release the new version
+    usage: release the new version
+    script: rjsa "$VERSION" "$PR"
+    args:
+      - name: version
+        required: true
+        validate:
+          - regexp: "^v\\d+\\.\\d+.\\d+(-\\d+)?$"
+        script_envs:
+          - version
+      - name: pr
+        required: false
+        validate:
+          - regexp: "^\\d+$"
+        script_envs:
+          - pr
+    flags:
+      - name: ref
+        required: false
+        script_envs:
+          - REF
+
+  - name: changelog
+    description: Create a changelog
+    usage: Create a changelog
+    script: bash scripts/changelog.sh
+
+  - name: notebook
+    description: Create a notebook
+    usage: Create a notebook
+    script: |
+      git ls-files | grep -E "\.md$" | grep -v .github | xargs cat - > securefix-action.md

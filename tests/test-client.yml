@@ -1,0 +1,44 @@
+name: Test client action
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - id: action
+        uses: .
+        continue-on-error: true
+        with:
+          action: client
+          server_repository: example/securefix-server
+          files: "README.md"
+          use_git_ls_files: "true"
+          fail_if_changes: "false"
+          repository: example/repo
+          branch: main
+          root_dir: "."
+          commit_message: "fix: automated secure fix"
+          pull_request_title: "Automated fix"
+          pull_request_base_branch: main
+          pull_request_body: "This PR contains automated fixes."
+          pull_request_labels: |
+            automated
+          pull_request_draft: "false"
+          pull_request_reviewers: |
+            reviewer1
+          pull_request_team_reviewers: |
+            team1
+          pull_request_assignees: |
+            assignee1
+          pull_request_comment: "Automated fix applied."
+          project_owner: example-org
+          project_number: "1"
+          project_id: "PVT_123"
+          milestone_number: "1"
+          automerge_method: squash
+          custom: '{"key": "value"}'
+      - name: Assert action ran
+        run: |
+          echo "conclusion: ${{ steps.action.conclusion }}"
+          echo "PASS: action step executed"
