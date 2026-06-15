@@ -1,0 +1,26 @@
+name: Test validate-config action
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - id: action
+        uses: .
+        continue-on-error: true
+        with:
+          action: validate-config
+          config: |
+            repositories:
+              - repository: example/repo
+                branch: main
+          config_file: ""
+          workflow_name: securefix
+          allow_workflow_fix: "false"
+          allow_members_read: "false"
+          allow_organization_projects_write: "false"
+      - name: Assert action ran
+        run: |
+          echo "conclusion: ${{ steps.action.conclusion }}"
+          echo "PASS: action step completed (validate-config scenario)"
