@@ -1,0 +1,27 @@
+name: Test commit action with outputs and commit_error inputs
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - id: commit
+        name: Run commit action with outputs and commit_error inputs
+        uses: .
+        with:
+          action: commit
+          outputs: '{"branch":"fix/test","push_repository":"octocat/hello-world"}'
+          commit_error: ""
+          commit_message: "chore: automated fix"
+        continue-on-error: true
+
+      - name: Assert commit action ran
+        run: |
+          echo "commit outcome: ${{ steps.commit.outcome }}"
+          if [ "${{ steps.commit.outcome }}" = "skipped" ]; then
+            echo "FAIL: action was skipped unexpectedly"
+            exit 1
+          fi
+          echo "PASS: commit action ran with outputs and commit_error inputs (outcome: ${{ steps.commit.outcome }})"

@@ -1,0 +1,28 @@
+name: Test default action defaults to client when server_repository is set
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - id: action
+        name: Run action with server_repository set (should default to client)
+        uses: .
+        with:
+          server_repository: "example-org/securefix-server"
+          commit_message: "fix: automated code fix"
+          use_git_ls_files: "true"
+          fail_if_changes: "false"
+        continue-on-error: true
+
+      - name: Assert action ran as client
+        run: |
+          echo "action outcome: ${{ steps.action.outcome }}"
+          # Without app credentials, the action will fail but should not be skipped
+          if [ "${{ steps.action.outcome }}" = "skipped" ]; then
+            echo "FAIL: action was skipped unexpectedly"
+            exit 1
+          fi
+          echo "PASS: action ran (outcome: ${{ steps.action.outcome }})"

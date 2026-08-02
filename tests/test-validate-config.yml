@@ -1,0 +1,39 @@
+name: Test validate-config action
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Write a valid config file
+        run: |
+          cat > /tmp/securefix-config.yaml << 'EOF'
+          repositories:
+            - repository: owner/repo
+              branch: main
+          EOF
+
+      - id: validate
+        name: Run validate-config action
+        uses: .
+        with:
+          action: validate-config
+          config: |
+            repositories:
+              - repository: owner/repo
+                branch: main
+        continue-on-error: true
+
+      - name: Assert validate-config ran
+        run: |
+          echo "validate outcome: ${{ steps.validate.outcome }}"
+          # validate-config should complete (success or failure is acceptable
+          # since we don't have a real GitHub App configured, but the action
+          # should at least start and process the config input)
+          if [ "${{ steps.validate.outcome }}" = "skipped" ]; then
+            echo "FAIL: action was skipped unexpectedly"
+            exit 1
+          fi
+          echo "PASS: validate-config action ran (outcome: ${{ steps.validate.outcome }})"

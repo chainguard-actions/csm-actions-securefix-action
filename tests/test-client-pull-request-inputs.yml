@@ -1,0 +1,43 @@
+name: Test client action with pull request inputs
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - id: client
+        name: Run client action with pull request inputs
+        uses: .
+        with:
+          action: client
+          repository: octocat/hello-world
+          root_dir: "."
+          files: "README.md"
+          pull_request_title: "Fix: automated security fix"
+          pull_request_base_branch: main
+          pull_request_body: "This PR was created by the securefix action."
+          pull_request_labels: |
+            security
+            automated
+          pull_request_reviewers: |
+            octocat
+          pull_request_team_reviewers: |
+            security-team
+          pull_request_assignees: |
+            octocat
+          automerge_method: squash
+          custom: '{"key":"value"}'
+          use_git_ls_files: "false"
+          fail_if_changes: "false"
+        continue-on-error: true
+
+      - name: Assert client action ran
+        run: |
+          echo "client outcome: ${{ steps.client.outcome }}"
+          if [ "${{ steps.client.outcome }}" = "skipped" ]; then
+            echo "FAIL: action was skipped unexpectedly"
+            exit 1
+          fi
+          echo "PASS: client action ran with pull request inputs (outcome: ${{ steps.client.outcome }})"

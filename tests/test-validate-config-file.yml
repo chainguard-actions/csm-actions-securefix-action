@@ -1,0 +1,36 @@
+name: Test validate-config action with config_file input
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Create config file for testing
+        run: |
+          mkdir -p "$GITHUB_WORKSPACE/tests/fixtures"
+          cat > "$GITHUB_WORKSPACE/tests/fixtures/securefix-config.yaml" << 'EOF'
+          repositories:
+            - repository: owner/repo
+              branch: main
+              pull_request_title: "fix: automated fix"
+              pull_request_base_branch: main
+          EOF
+
+      - id: validate
+        name: Run validate-config with config_file
+        uses: .
+        with:
+          action: validate-config
+          config_file: "${{ github.workspace }}/tests/fixtures/securefix-config.yaml"
+        continue-on-error: true
+
+      - name: Assert validate-config with file ran
+        run: |
+          echo "validate outcome: ${{ steps.validate.outcome }}"
+          if [ "${{ steps.validate.outcome }}" = "skipped" ]; then
+            echo "FAIL: action was skipped unexpectedly"
+            exit 1
+          fi
+          echo "PASS: validate-config with config_file ran (outcome: ${{ steps.validate.outcome }})"

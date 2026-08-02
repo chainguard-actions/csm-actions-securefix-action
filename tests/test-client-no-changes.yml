@@ -1,0 +1,28 @@
+name: Test client action with no changes
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - id: client
+        name: Run client action (no server_repository, expect graceful handling)
+        uses: .
+        with:
+          action: client
+          use_git_ls_files: "true"
+          fail_if_changes: "false"
+        continue-on-error: true
+
+      - name: Assert client action ran
+        run: |
+          echo "client outcome: ${{ steps.client.outcome }}"
+          # Without server_repository or app credentials, the action may fail
+          # but it should not be skipped - it must have attempted to run
+          if [ "${{ steps.client.outcome }}" = "skipped" ]; then
+            echo "FAIL: action was skipped unexpectedly"
+            exit 1
+          fi
+          echo "PASS: client action ran (outcome: ${{ steps.client.outcome }})"

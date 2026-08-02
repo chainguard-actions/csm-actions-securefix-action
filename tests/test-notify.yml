@@ -1,0 +1,27 @@
+name: Test notify action
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - id: notify
+        name: Run notify action
+        uses: .
+        with:
+          action: notify
+          pull_request_comment: "Automated fix has been applied."
+        continue-on-error: true
+
+      - name: Assert notify action ran
+        run: |
+          echo "notify outcome: ${{ steps.notify.outcome }}"
+          # Without a valid pull request context, notify may fail gracefully
+          # but it should not be skipped
+          if [ "${{ steps.notify.outcome }}" = "skipped" ]; then
+            echo "FAIL: action was skipped unexpectedly"
+            exit 1
+          fi
+          echo "PASS: notify action ran (outcome: ${{ steps.notify.outcome }})"

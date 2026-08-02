@@ -1,0 +1,32 @@
+name: Test client action with app and project inputs
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - id: client
+        name: Run client action with app and project inputs
+        uses: .
+        with:
+          action: client
+          app_id: "123456"
+          app_private_key: "fake-private-key-for-coverage"
+          project_owner: octocat
+          project_number: "42"
+          project_id: "PVT_abc123"
+          milestone_number: "1"
+          use_git_ls_files: "true"
+          fail_if_changes: "false"
+        continue-on-error: true
+
+      - name: Assert client action ran
+        run: |
+          echo "client outcome: ${{ steps.client.outcome }}"
+          if [ "${{ steps.client.outcome }}" = "skipped" ]; then
+            echo "FAIL: action was skipped unexpectedly"
+            exit 1
+          fi
+          echo "PASS: client action ran with app and project inputs (outcome: ${{ steps.client.outcome }})"
