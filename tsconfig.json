@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+    "lib": ["ES2023"],
+    "module": "es2022",
+    "moduleResolution": "bundler",
+    "target": "ES2023",
+    "outDir": "./lib",
+    "rootDir": "./src",
+    "strict": true,
+    "noImplicitAny": true,
+    "esModuleInterop": true,
+    "types": ["node"]
+  },
+  // Test files are type checked too. They are never bundled into dist because
+  // ncc only follows imports from the entrypoint.
+  "exclude": ["node_modules"]
+  // "ts-node": {
+  //   "esm": true,
+  //   "experimentalSpecifierResolution": "node",
+  // }
+}

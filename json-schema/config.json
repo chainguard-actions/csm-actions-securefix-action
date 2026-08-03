@@ -1,0 +1,61 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "entries": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "client": {
+            "type": "object",
+            "properties": {
+              "repositories": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "branches": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            "required": ["repositories"],
+            "additionalProperties": false
+          },
+          "push": {
+            "type": "object",
+            "properties": {
+              "repositories": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "branches": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            "required": ["branches"],
+            "additionalProperties": false
+          },
+          "pull_request": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          }
+        },
+        "required": ["client", "push"],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": ["entries"],
+  "additionalProperties": false
+}

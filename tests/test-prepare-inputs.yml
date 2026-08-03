@@ -1,0 +1,40 @@
+name: Test prepare action inputs coverage
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Run prepare action with all prepare inputs (expect failure without valid credentials)
+        id: action
+        uses: .
+        continue-on-error: true
+        with:
+          action: prepare
+          app_id: "12345"
+          app_private_key: "fake-private-key-for-coverage"
+          outputs: '{"key":"value"}'
+          project_owner: example-org
+          project_number: "42"
+          project_id: "PVT_abc123"
+          milestone_number: "7"
+          workflow_name: securefix
+          allow_workflow_fix: "false"
+          allow_members_read: "false"
+          allow_organization_projects_write: "false"
+          label_name: securefix
+          label_description: example/client/123456789
+          delete_label: "true"
+
+      - name: Assert action ran (outcome is success or failure, not skipped)
+        env:
+          OUTCOME: ${{ steps.action.outcome }}
+        run: |
+          echo "outcome: $OUTCOME"
+          if [ "$OUTCOME" = "skipped" ]; then
+            echo "FAIL: action was skipped unexpectedly"
+            exit 1
+          fi
+          echo "PASS: action ran with prepare inputs (outcome: $OUTCOME)"

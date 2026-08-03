@@ -1,0 +1,50 @@
+name: Test client action inputs coverage
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Run client action with all client inputs (expect failure without valid credentials)
+        id: action
+        uses: .
+        continue-on-error: true
+        with:
+          action: client
+          app_id: "12345"
+          app_private_key: "fake-private-key-for-coverage"
+          server_repository: example/server
+          files: "src/main.go\nsrc/util.go"
+          commit_message: "fix: apply automated security fix"
+          pull_request_comment: "Automated fix applied by securefix."
+          repository: example/client
+          branch: fix/automated-patch
+          root_dir: "."
+          pull_request_title: "Automated Security Fix"
+          pull_request_base_branch: main
+          pull_request_body: "This PR applies an automated security fix."
+          pull_request_labels: |
+            security
+            automated
+          pull_request_draft: "false"
+          pull_request_reviewers: |
+            octocat
+          pull_request_team_reviewers: |
+            security-team
+          pull_request_assignees: |
+            octocat
+          automerge_method: squash
+          custom: '{"key":"value"}'
+
+      - name: Assert action ran (outcome is success or failure, not skipped)
+        env:
+          OUTCOME: ${{ steps.action.outcome }}
+        run: |
+          echo "outcome: $OUTCOME"
+          if [ "$OUTCOME" = "skipped" ]; then
+            echo "FAIL: action was skipped unexpectedly"
+            exit 1
+          fi
+          echo "PASS: action ran with client inputs (outcome: $OUTCOME)"

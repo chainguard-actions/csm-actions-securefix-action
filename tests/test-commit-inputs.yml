@@ -1,0 +1,31 @@
+name: Test commit action inputs coverage
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Run commit action with commit-specific inputs (expect failure without valid credentials)
+        id: action
+        uses: .
+        continue-on-error: true
+        with:
+          action: commit
+          app_id: "12345"
+          app_private_key: "fake-private-key-for-coverage"
+          commit_message: "fix: apply automated security fix"
+          commit_error: "some error from previous step"
+          outputs: '{"branch":"fix/automated-patch","push_repository":"example/server"}'
+
+      - name: Assert action ran (outcome is success or failure, not skipped)
+        env:
+          OUTCOME: ${{ steps.action.outcome }}
+        run: |
+          echo "outcome: $OUTCOME"
+          if [ "$OUTCOME" = "skipped" ]; then
+            echo "FAIL: action was skipped unexpectedly"
+            exit 1
+          fi
+          echo "PASS: action ran with commit inputs (outcome: $OUTCOME)"

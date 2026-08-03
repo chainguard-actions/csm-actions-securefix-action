@@ -1,0 +1,36 @@
+name: Test validate-config with config_file input
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Create config file
+        run: |
+          cat > /tmp/securefix-config.yaml << 'EOF'
+          entries:
+            - client:
+                repositories:
+                  - example/client
+                branches:
+                  - main
+              push:
+                repositories:
+                  - example/server
+                branches:
+                  - feat/*
+          EOF
+
+      - name: Run validate-config with config_file
+        id: action
+        uses: .
+        with:
+          action: validate-config
+          config_file: /tmp/securefix-config.yaml
+
+      - name: Assert action succeeded
+        run: |
+          echo "validate-config with config_file completed successfully"
+          echo "PASS"
