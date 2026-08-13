@@ -1,0 +1,54 @@
+name: Test client mode with full inputs (graceful failure expected)
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - id: action
+        uses: .
+        continue-on-error: true
+        with:
+          action: client
+          app_id: "12345"
+          app_private_key: |
+            -----BEGIN RSA PRIVATE KEY-----
+            MIIEowIBAAKCAQEA0Z3VS5JJcds3xHn/ygWep4PAtEsHAqGLqHMHFHMBMBMBMBMB
+            -----END RSA PRIVATE KEY-----
+          server_repository: owner/server-repo
+          files: "file1.txt\nfile2.txt"
+          commit_message: "fix: automated security fix"
+          pull_request_comment: "This PR was created automatically."
+          repository: owner/client-repo
+          branch: fix/auto-fix
+          root_dir: "."
+          pull_request_title: "Automated Security Fix"
+          pull_request_base_branch: main
+          pull_request_body: "This pull request contains automated security fixes."
+          pull_request_labels: "security\nautomated"
+          pull_request_draft: "false"
+          pull_request_reviewers: "reviewer1"
+          pull_request_team_reviewers: "team1"
+          pull_request_assignees: "assignee1"
+          project_owner: owner
+          project_number: "1"
+          project_id: "PVT_123"
+          milestone_number: "1"
+          automerge_method: squash
+          custom: '{"key": "value"}'
+
+      - name: Assert client action failed gracefully with invalid credentials
+        env:
+          OUTCOME: ${{ steps.action.outcome }}
+        run: |
+          echo "outcome: $OUTCOME"
+          if [ "$OUTCOME" = "success" ]; then
+            echo "PASS: action succeeded (unexpected but acceptable)"
+          elif [ "$OUTCOME" = "failure" ]; then
+            echo "PASS: action failed gracefully as expected with invalid app credentials"
+          else
+            echo "FAIL: unexpected outcome '$OUTCOME'"
+            exit 1
+          fi

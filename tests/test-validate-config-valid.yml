@@ -1,0 +1,35 @@
+name: Test validate-config with valid config
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - id: action
+        uses: .
+        continue-on-error: true
+        with:
+          action: validate-config
+          config: |
+            entries:
+              - client:
+                  repositories:
+                    - owner/repo-a
+                  branches:
+                    - main
+                push:
+                  branches:
+                    - fix/auto
+
+      - name: Assert validate-config succeeded with valid config
+        env:
+          OUTCOME: ${{ steps.action.outcome }}
+        run: |
+          echo "outcome: $OUTCOME"
+          if [ "$OUTCOME" != "success" ]; then
+            echo "FAIL: expected validate-config to succeed with valid config, got outcome '$OUTCOME'"
+            exit 1
+          fi
+          echo "PASS: validate-config succeeded with valid config"
