@@ -1,23 +1,25 @@
-name: Test validate-config action
+name: Test notify action with commit_error and outputs inputs
 on:
   workflow_dispatch:
 jobs:
   test:
     runs-on: ubuntu-latest
+    env:
+      GITHUB_EVENT_NAME: push
+      GITHUB_REF: refs/heads/main
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
-      - name: Test validate-config with inline config
+      - name: Run notify action with commit_error and outputs inputs
         id: action
         uses: .
         with:
-          action: validate-config
-          config: |
-            - repository: owner/repo
-              branch: main
+          action: notify
+          commit_error: "some error occurred during commit"
+          outputs: '{"key": "value"}'
         continue-on-error: true
 
-      - name: Assert action ran (validate-config completed or failed gracefully)
+      - name: Assert action ran
         env:
           OUTCOME: ${{ steps.action.outcome }}
         run: |

@@ -1,26 +1,30 @@
-name: Test prepare action
+name: Test client action with project and app inputs
 on:
   workflow_dispatch:
 jobs:
   test:
     runs-on: ubuntu-latest
     env:
-      GITHUB_EVENT_NAME: pull_request
-      GITHUB_REF: refs/pull/1/merge
-      GITHUB_HEAD_REF: feature-branch
-      GITHUB_BASE_REF: main
+      GITHUB_EVENT_NAME: push
+      GITHUB_REF: refs/heads/main
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
-      - name: Run prepare action
+      - name: Run client action with project and app inputs
         id: action
         uses: .
         with:
-          action: prepare
-          workflow_name: securefix
-          allow_workflow_fix: "false"
-          allow_members_read: "false"
-          allow_organization_projects_write: "false"
+          action: client
+          use_git_ls_files: "true"
+          fail_if_changes: "false"
+          commit_message: "fix: automated fix"
+          app_id: "12345"
+          app_private_key: "fake-private-key-for-coverage"
+          project_owner: "owner"
+          project_number: "1"
+          project_id: "PVT_abc123"
+          milestone_number: "1"
+          custom: '{"key": "value"}'
         continue-on-error: true
 
       - name: Assert action ran

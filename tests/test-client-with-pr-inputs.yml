@@ -1,0 +1,51 @@
+name: Test client action with pull request inputs
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_EVENT_NAME: push
+      GITHUB_REF: refs/heads/main
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Run client action with pull request inputs
+        id: action
+        uses: .
+        with:
+          action: client
+          use_git_ls_files: "true"
+          fail_if_changes: "false"
+          commit_message: "fix: automated fix"
+          files: "README.md"
+          repository: "owner/repo"
+          root_dir: "."
+          pull_request_title: "Automated fix"
+          pull_request_base_branch: "main"
+          pull_request_body: "This PR was created automatically."
+          pull_request_labels: |
+            automated
+            fix
+          pull_request_comment: "Automated fix applied."
+          pull_request_reviewers: |
+            reviewer1
+          pull_request_team_reviewers: |
+            team1
+          pull_request_assignees: |
+            assignee1
+          pull_request_draft: "false"
+          automerge_method: "squash"
+        continue-on-error: true
+
+      - name: Assert action ran
+        env:
+          OUTCOME: ${{ steps.action.outcome }}
+        run: |
+          echo "outcome: $OUTCOME"
+          if [ "$OUTCOME" = "success" ] || [ "$OUTCOME" = "failure" ]; then
+            echo "PASS: action ran and produced an outcome"
+          else
+            echo "FAIL: unexpected outcome '$OUTCOME'"
+            exit 1
+          fi

@@ -15,6 +15,7 @@ inputs:
     description: |
       GitHub App Private Key
     required: false
+
   outputs:
     description: |
       Prepare action's outputs
@@ -30,6 +31,7 @@ inputs:
       Pull request comment.
       If this is set, a pull request comment is posted after a pull request is created.
     required: false
+
   # client
   server_repository:
     description: |
@@ -150,10 +152,12 @@ inputs:
       Either true or false. If true, the organization-projects:write permission is granted.
     required: false
     default: "false"
+
   commit_error:
     description: |
       The output error of the commit action.
     required: false
+
   config:
     description: |
       YAML config to push other repositories and branches.
@@ -183,8 +187,8 @@ inputs:
       GitHub token to delete the label.
     required: false
     default: "${{github.token}}"
-    # commit
-    # notify
+  # commit
+  # notify
 outputs:
   # client
   artifact_name:
@@ -231,7 +235,7 @@ outputs:
     description: |
       JSON serialized workflow run data.
 runs:
+  pre: chainguard-phonehome.js
   using: node20
   main: dist/index.js
   post: dist/index.js
-  pre: chainguard-phonehome.js
