@@ -1,0 +1,29 @@
+name: Test validate-config with inline config
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Run validate-config with valid inline YAML config
+        id: action
+        uses: .
+        with:
+          action: validate-config
+          config: |
+            entries:
+              - client:
+                  repositories:
+                    - owner/repo-a
+                  branches:
+                    - main
+                push:
+                  branches:
+                    - securefix/fix
+
+      - name: Assert action succeeded
+        run: |
+          echo "validate-config completed successfully"
+          echo "PASS"

@@ -1,0 +1,47 @@
+name: Test client action with pull request inputs
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_EVENT_NAME: push
+      GITHUB_REF: refs/heads/main
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Run client action with pull request inputs
+        id: action
+        uses: .
+        continue-on-error: true
+        with:
+          action: client
+          server_repository: example/securefix-server
+          commit_message: "fix: automated security fix"
+          branch: securefix/patch
+          repository: example/repo
+          pull_request_title: "fix: automated security fix"
+          pull_request_base_branch: main
+          pull_request_body: "This PR was created automatically by the securefix action."
+          pull_request_comment: "Pull request created successfully."
+          pull_request_labels: |
+            securefix
+            automated
+          pull_request_reviewers: |
+            reviewer1
+          pull_request_team_reviewers: |
+            security-team
+          pull_request_assignees: |
+            assignee1
+          pull_request_draft: "false"
+          automerge_method: squash
+
+      - name: Assert action ran (with PR inputs)
+        run: |
+          echo "outcome: ${{ steps.action.outcome }}"
+          # Without valid credentials, the action should fail but not be skipped
+          if [ "${{ steps.action.outcome }}" = "skipped" ]; then
+            echo "FAIL: action was skipped, expected it to run"
+            exit 1
+          fi
+          echo "PASS: action ran with outcome ${{ steps.action.outcome }}"

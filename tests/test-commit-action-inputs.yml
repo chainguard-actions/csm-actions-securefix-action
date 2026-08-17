@@ -1,28 +1,29 @@
-name: Test validate-config action
+name: Test commit action with outputs and commit_error inputs
 on:
   workflow_dispatch:
 jobs:
   test:
     runs-on: ubuntu-latest
+    env:
+      GITHUB_EVENT_NAME: push
+      GITHUB_REF: refs/heads/main
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
-      - name: Test validate-config with inline config
+      - name: Run commit action with outputs and commit_error inputs
         id: action
         uses: .
         continue-on-error: true
         with:
-          action: validate-config
-          config: |
-            - repository: example/repo
-              branch: main
-              commit_message: "fix: automated fix"
+          action: commit
+          outputs: '{"branch": "securefix/patch", "github_token": "fake-token"}'
+          commit_message: "fix: automated security fix"
+          commit_error: ""
 
-      - name: Assert action ran (validate-config)
+      - name: Assert action ran (with commit inputs)
         run: |
           echo "outcome: ${{ steps.action.outcome }}"
-          # validate-config may succeed or fail depending on config validity
-          # but the action should have run (not skipped)
+          # Without valid credentials/outputs, the action should fail but not be skipped
           if [ "${{ steps.action.outcome }}" = "skipped" ]; then
             echo "FAIL: action was skipped, expected it to run"
             exit 1

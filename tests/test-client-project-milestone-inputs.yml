@@ -1,0 +1,38 @@
+name: Test client action with project and milestone inputs
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_EVENT_NAME: push
+      GITHUB_REF: refs/heads/main
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Run client action with project and milestone inputs
+        id: action
+        uses: .
+        continue-on-error: true
+        with:
+          action: client
+          server_repository: example/securefix-server
+          commit_message: "fix: automated security fix"
+          branch: securefix/patch
+          repository: example/repo
+          pull_request_title: "fix: automated security fix"
+          pull_request_base_branch: main
+          project_owner: example-org
+          project_number: "42"
+          project_id: "PVT_kwDOABCDEF"
+          milestone_number: "7"
+
+      - name: Assert action ran (with project and milestone inputs)
+        run: |
+          echo "outcome: ${{ steps.action.outcome }}"
+          # Without valid credentials, the action should fail but not be skipped
+          if [ "${{ steps.action.outcome }}" = "skipped" ]; then
+            echo "FAIL: action was skipped, expected it to run"
+            exit 1
+          fi
+          echo "PASS: action ran with outcome ${{ steps.action.outcome }}"

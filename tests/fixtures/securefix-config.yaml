@@ -1,0 +1,9 @@
+entries:
+  - client:
+      repositories:
+        - owner/repo-b
+      branches:
+        - main
+    push:
+      branches:
+        - securefix/fix

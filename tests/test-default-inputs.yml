@@ -1,0 +1,36 @@
+name: Test default inputs
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_EVENT_NAME: push
+      GITHUB_REF: refs/heads/main
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Run action with minimal inputs (uses defaults)
+        id: action
+        uses: .
+        continue-on-error: true
+        with:
+          action: client
+          # use_git_ls_files defaults to "true"
+          # fail_if_changes defaults to "false"
+          # pull_request_draft defaults to "false"
+          # delete_label defaults to "true"
+          # workflow_name defaults to "securefix"
+          # allow_workflow_fix defaults to "false"
+          # allow_members_read defaults to "false"
+          # allow_organization_projects_write defaults to "false"
+
+      - name: Assert action ran with defaults
+        run: |
+          echo "outcome: ${{ steps.action.outcome }}"
+          # Without credentials, the action should fail but not be skipped
+          if [ "${{ steps.action.outcome }}" = "skipped" ]; then
+            echo "FAIL: action was skipped, expected it to run"
+            exit 1
+          fi
+          echo "PASS: action ran with outcome ${{ steps.action.outcome }}"
