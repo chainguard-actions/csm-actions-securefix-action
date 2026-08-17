@@ -1,0 +1,55 @@
+name: Test client action with pull request inputs
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_EVENT_NAME: push
+      GITHUB_REF: refs/heads/main
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - id: action
+        uses: .
+        with:
+          action: client
+          app_id: "12345"
+          app_private_key: "fake-private-key"
+          commit_message: "fix: automated secure fix"
+          repository: "owner/repo"
+          branch: "securefix/fix"
+          root_dir: "."
+          pull_request_title: "Automated secure fix"
+          pull_request_base_branch: "main"
+          pull_request_body: "This PR contains automated fixes."
+          pull_request_labels: |
+            automated
+            securefix
+          pull_request_reviewers: |
+            reviewer1
+          pull_request_team_reviewers: |
+            team1
+          pull_request_assignees: |
+            assignee1
+          pull_request_comment: "Automated fix applied."
+          pull_request_draft: "false"
+          automerge_method: "squash"
+          custom: '{"key":"value"}'
+          project_owner: "myorg"
+          project_number: "1"
+          project_id: "PVT_abc123"
+          milestone_number: "1"
+          fail_if_changes: "false"
+          use_git_ls_files: "true"
+          files: ""
+        continue-on-error: true
+      - name: Assert action ran
+        run: |
+          echo "outcome: ${{ steps.action.outcome }}"
+          # Without valid app credentials, the action may fail with an auth error
+          # but it should not be skipped
+          if [ "${{ steps.action.outcome }}" = "skipped" ]; then
+            echo "FAIL: action was skipped unexpectedly"
+            exit 1
+          fi
+          echo "PASS: action ran (outcome: ${{ steps.action.outcome }})"

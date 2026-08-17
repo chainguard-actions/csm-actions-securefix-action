@@ -1,27 +1,27 @@
-name: Test prepare action
+name: Test notify action with commit_error and pull_request_comment inputs
 on:
   workflow_dispatch:
 jobs:
   test:
     runs-on: ubuntu-latest
     env:
-      GITHUB_EVENT_NAME: workflow_run
+      GITHUB_EVENT_NAME: push
       GITHUB_REF: refs/heads/main
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       - id: action
         uses: .
         with:
-          action: prepare
-          workflow_name: securefix
-          allow_workflow_fix: "false"
-          allow_members_read: "false"
-          allow_organization_projects_write: "false"
+          action: notify
+          app_id: "12345"
+          app_private_key: "fake-private-key"
+          commit_error: "some error occurred during commit"
+          pull_request_comment: "Notification: fix was applied."
         continue-on-error: true
       - name: Assert action ran
         run: |
           echo "outcome: ${{ steps.action.outcome }}"
-          # Without app credentials, the action may fail with an auth error
+          # Without valid app credentials, the action may fail with an auth error
           # but it should not be skipped
           if [ "${{ steps.action.outcome }}" = "skipped" ]; then
             echo "FAIL: action was skipped unexpectedly"
