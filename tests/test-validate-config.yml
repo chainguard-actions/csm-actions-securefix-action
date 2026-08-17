@@ -8,15 +8,21 @@ jobs:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       - id: action
         uses: .
-        continue-on-error: true
         with:
           action: validate-config
           config: |
-            repositories:
-              - name: example/repo
-                branch: main
-          config_file: ""
+            - repository: owner/repo
+              branch: main
+        continue-on-error: true
       - name: Assert action ran
+        env:
+          OUTCOME: ${{ steps.action.outcome }}
         run: |
-          echo "conclusion: ${{ steps.action.conclusion }}"
-          echo "PASS: action step executed"
+          echo "outcome: $OUTCOME"
+          # The action may fail due to missing GitHub App credentials,
+          # but it should at least attempt to run (not be skipped).
+          if [ "$OUTCOME" = "skipped" ]; then
+            echo "FAIL: action was skipped, expected it to run"
+            exit 1
+          fi
+          echo "PASS: action ran with outcome=$OUTCOME"

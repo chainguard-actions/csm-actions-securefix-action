@@ -1,0 +1,43 @@
+name: Test validate-config with config_file
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Create config file
+        run: |
+          cat > /tmp/securefix-config.yaml << 'EOF'
+          entries:
+            - client:
+                repositories:
+                  - owner/repo-a
+                branches:
+                  - main
+              push:
+                branches:
+                  - fix/auto
+          EOF
+
+      - name: Run validate-config with config_file
+        id: action
+        uses: .
+        with:
+          action: validate-config
+          config_file: /tmp/securefix-config.yaml
+        continue-on-error: true
+
+      - name: Assert action succeeded with config_file
+        env:
+          OUTCOME: ${{ steps.action.outcome }}
+          ERROR_OUTPUT: ${{ steps.action.outputs.error }}
+        run: |
+          echo "outcome: $OUTCOME"
+          echo "error: $ERROR_OUTPUT"
+          if [ "$OUTCOME" != "success" ]; then
+            echo "FAIL: expected action to succeed with valid config_file, got outcome=$OUTCOME, error=$ERROR_OUTPUT"
+            exit 1
+          fi
+          echo "PASS: action correctly validated config from file"

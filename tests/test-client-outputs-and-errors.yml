@@ -1,30 +1,29 @@
-name: Test prepare action
+name: Test client action with outputs and commit_error inputs
 on:
   workflow_dispatch:
 jobs:
   test:
     runs-on: ubuntu-latest
     env:
-      GITHUB_EVENT_NAME: label
+      GITHUB_EVENT_NAME: push
       GITHUB_REF: refs/heads/main
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       - id: action
         uses: .
         with:
-          action: prepare
-          workflow_name: securefix
-          allow_workflow_fix: "false"
-          allow_members_read: "false"
-          allow_organization_projects_write: "false"
-          delete_label: "false"
+          action: commit
+          server_repository: owner/securefix-server
+          commit_message: "fix: automated security fix"
+          outputs: '{"key": "value"}'
+          commit_error: "some error from previous step"
         continue-on-error: true
       - name: Assert action ran
         env:
           OUTCOME: ${{ steps.action.outcome }}
         run: |
           echo "outcome: $OUTCOME"
-          # The action may fail due to missing GitHub App credentials or label context,
+          # The action will fail due to missing credentials or context,
           # but it should at least attempt to run (not be skipped).
           if [ "$OUTCOME" = "skipped" ]; then
             echo "FAIL: action was skipped, expected it to run"

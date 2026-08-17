@@ -1,0 +1,50 @@
+name: Test client action with pull request options
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_EVENT_NAME: push
+      GITHUB_REF: refs/heads/main
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - id: action
+        uses: .
+        with:
+          action: client
+          server_repository: owner/securefix-server
+          repository: owner/target-repo
+          root_dir: "."
+          files: |
+            file1.go
+            file2.go
+          custom: '{"key": "value"}'
+          pull_request_title: "fix: automated security fix"
+          pull_request_base_branch: main
+          pull_request_body: "This PR was created automatically by securefix."
+          pull_request_labels: |
+            automated
+            security
+          pull_request_reviewers: |
+            reviewer1
+          pull_request_team_reviewers: |
+            team-security
+          pull_request_assignees: |
+            assignee1
+          pull_request_comment: "Securefix has created this pull request."
+          pull_request_draft: "false"
+          commit_message: "fix: automated security fix"
+        continue-on-error: true
+      - name: Assert action ran
+        env:
+          OUTCOME: ${{ steps.action.outcome }}
+        run: |
+          echo "outcome: $OUTCOME"
+          # The action will fail due to missing credentials,
+          # but it should at least attempt to run (not be skipped).
+          if [ "$OUTCOME" = "skipped" ]; then
+            echo "FAIL: action was skipped, expected it to run"
+            exit 1
+          fi
+          echo "PASS: action ran with outcome=$OUTCOME"
