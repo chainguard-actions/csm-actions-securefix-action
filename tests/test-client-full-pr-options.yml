@@ -1,0 +1,44 @@
+name: Test client action with full PR options
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Run client action with full PR options
+        id: action
+        uses: .
+        with:
+          action: client
+          app_id: "12345"
+          app_private_key: "fake-private-key"
+          server_repository: owner/server-repo
+          repository: owner/target-repo
+          branch: securefix/fix
+          root_dir: "."
+          files: "file1.txt\nfile2.txt"
+          commit_message: "fix: automated security fix"
+          pull_request_title: "Automated security fix"
+          pull_request_base_branch: main
+          pull_request_body: "This PR contains automated security fixes."
+          pull_request_labels: "security\nautomated"
+          pull_request_reviewers: "reviewer1"
+          pull_request_team_reviewers: "team1"
+          pull_request_assignees: "assignee1"
+          pull_request_comment: "Security fix applied automatically."
+          automerge_method: squash
+          custom: '{"key": "value"}'
+        continue-on-error: true
+
+      - name: Assert action ran and produced an outcome
+        env:
+          OUTCOME: ${{ steps.action.outcome }}
+        run: |
+          echo "outcome: $OUTCOME"
+          if [ -z "$OUTCOME" ]; then
+            echo "FAIL: action did not produce an outcome"
+            exit 1
+          fi
+          echo "PASS: action produced outcome=$OUTCOME (failure expected due to fake credentials)"

@@ -1,0 +1,46 @@
+name: Test validate-config with multiple entries
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Run validate-config with multiple entries
+        id: action
+        uses: .
+        with:
+          action: validate-config
+          config: |
+            entries:
+              - client:
+                  repositories:
+                    - owner/repo-a
+                    - owner/repo-b
+                  branches:
+                    - main
+                    - develop
+                push:
+                  repositories:
+                    - owner/server-repo
+                  branches:
+                    - securefix/fix
+              - client:
+                  repositories:
+                    - owner/repo-c
+                push:
+                  branches:
+                    - securefix/patch
+        continue-on-error: true
+
+      - name: Assert action succeeded with multi-entry config
+        env:
+          OUTCOME: ${{ steps.action.outcome }}
+        run: |
+          echo "outcome: $OUTCOME"
+          if [ "$OUTCOME" != "success" ]; then
+            echo "FAIL: expected action to succeed with multi-entry config, got outcome=$OUTCOME"
+            exit 1
+          fi
+          echo "PASS"

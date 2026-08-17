@@ -1,0 +1,36 @@
+name: Test validate-config with invalid config
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Run validate-config with invalid config (missing required fields)
+        id: action
+        uses: .
+        with:
+          action: validate-config
+          config: |
+            entries:
+              - client:
+                  repositories:
+                    - owner/repo-a
+                push:
+                  repositories:
+                    - owner/repo-b
+        continue-on-error: true
+
+      - name: Assert action failed due to invalid config
+        env:
+          OUTCOME: ${{ steps.action.outcome }}
+          ERROR: ${{ steps.action.outputs.error }}
+        run: |
+          echo "outcome: $OUTCOME"
+          echo "error: $ERROR"
+          if [ "$OUTCOME" != "failure" ]; then
+            echo "FAIL: expected action to fail with invalid config (push.branches is required), got outcome=$OUTCOME"
+            exit 1
+          fi
+          echo "PASS: action correctly failed with invalid config"

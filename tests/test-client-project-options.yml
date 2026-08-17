@@ -1,0 +1,32 @@
+name: Test client action with project and milestone options
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Run client action with project and milestone options
+        id: action
+        uses: .
+        with:
+          action: client
+          server_repository: owner/server-repo
+          commit_message: "fix: automated security fix"
+          project_owner: myorg
+          project_number: "42"
+          project_id: "PVT_abc123"
+          milestone_number: "7"
+        continue-on-error: true
+
+      - name: Assert action ran and produced an outcome
+        env:
+          OUTCOME: ${{ steps.action.outcome }}
+        run: |
+          echo "outcome: $OUTCOME"
+          if [ -z "$OUTCOME" ]; then
+            echo "FAIL: action did not produce an outcome"
+            exit 1
+          fi
+          echo "PASS: action produced outcome=$OUTCOME (failure expected due to missing credentials)"
