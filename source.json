@@ -1,6 +1,11 @@
 {
   "owner": "csm-actions",
   "repo": "securefix-action",
-  "version": "",
-  "url": "https://github.com/csm-actions/securefix-action"
+  "version": "v0.6.3",
+  "commit_sha": "1b770a7af0ec5e04517295b4e14c4b451359d550",
+  "url": "https://github.com/csm-actions/securefix-action",
+  "policy_sha": "d636be7e43ef829af6e853da6b3c7566db9f72fe",
+  "test_policy_sha": "843adf9e4b8f85d0c08b27b9d0b09dd094b54702",
+  "test_agent_version": "2",
+  "harden_agent_version": "2"
 }

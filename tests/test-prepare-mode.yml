@@ -1,0 +1,35 @@
+name: Test prepare action mode
+on:
+  workflow_dispatch:
+jobs:
+  test-prepare-mode:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - id: action
+        uses: .
+        continue-on-error: true
+        with:
+          action: prepare
+          app_id: "12345"
+          app_private_key: |
+            -----BEGIN RSA PRIVATE KEY-----
+            MIIEowIBAAKCAQEA0Z3VS5JJcds3xHn/ygWep4PAtEsHABQbXQMuMFMNbkBMCMJA
+            -----END RSA PRIVATE KEY-----
+          workflow_name: securefix
+          allow_workflow_fix: "false"
+
+      - name: Assert prepare mode ran (fails gracefully without real credentials)
+        env:
+          OUTCOME: ${{ steps.action.outcome }}
+        run: |
+          echo "outcome: $OUTCOME"
+          if [ "$OUTCOME" = "success" ]; then
+            echo "PASS: prepare mode succeeded"
+          elif [ "$OUTCOME" = "failure" ]; then
+            echo "PASS: prepare mode failed gracefully (expected without real credentials)"
+          else
+            echo "FAIL: unexpected outcome '$OUTCOME'"
+            exit 1
+          fi

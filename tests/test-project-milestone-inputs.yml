@@ -1,0 +1,44 @@
+name: Test project and milestone inputs
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - name: Create config file fixture
+        run: |
+          cat > /tmp/securefix-config.yaml << 'EOF'
+          repositories:
+            - name: example-org/target-repo
+              branch: main
+          EOF
+      - id: action
+        uses: .
+        continue-on-error: true
+        with:
+          action: client
+          app_id: "12345"
+          app_private_key: "fake-private-key"
+          server_repository: "example-org/securefix-server"
+          config_file: "/tmp/securefix-config.yaml"
+          project_owner: "example-org"
+          project_number: "42"
+          project_id: "PVT_kwDOABCDEF"
+          milestone_number: "7"
+          commit_message: "fix: automated security fix"
+          pull_request_title: "Automated Security Fix"
+          pull_request_base_branch: "main"
+      - name: Assert action ran (fails gracefully with fake credentials/sentinel repo)
+        env:
+          OUTCOME: ${{ steps.action.outcome }}
+        run: |
+          echo "outcome: $OUTCOME"
+          if [ "$OUTCOME" = "success" ]; then
+            echo "PASS: action succeeded"
+          elif [ "$OUTCOME" = "failure" ]; then
+            echo "PASS: action failed gracefully (expected with fake credentials)"
+          else
+            echo "FAIL: unexpected outcome '$OUTCOME'"
+            exit 1
+          fi

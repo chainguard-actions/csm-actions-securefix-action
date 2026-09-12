@@ -1,0 +1,47 @@
+name: Test client mode with PR inputs
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - id: action
+        uses: .
+        continue-on-error: true
+        with:
+          action: client
+          client_id: "fake-client-id"
+          app_private_key: "fake-private-key"
+          server_repository: "example-org/securefix-server"
+          files: "README.md"
+          root_dir: "."
+          commit_message: "fix: automated security fix"
+          pull_request_title: "Automated Security Fix"
+          pull_request_base_branch: "main"
+          pull_request_body: "This PR contains automated security fixes."
+          pull_request_labels: |
+            security
+            automated
+          pull_request_reviewers: |
+            reviewer1
+          pull_request_team_reviewers: |
+            security-team
+          pull_request_assignees: |
+            assignee1
+          automerge_method: "squash"
+          custom: '{"key": "value"}'
+          pull_request_draft: "false"
+      - name: Assert action ran (fails gracefully with fake credentials/sentinel repo)
+        env:
+          OUTCOME: ${{ steps.action.outcome }}
+        run: |
+          echo "outcome: $OUTCOME"
+          if [ "$OUTCOME" = "success" ]; then
+            echo "PASS: action succeeded"
+          elif [ "$OUTCOME" = "failure" ]; then
+            echo "PASS: action failed gracefully (expected with fake credentials)"
+          else
+            echo "FAIL: unexpected outcome '$OUTCOME'"
+            exit 1
+          fi

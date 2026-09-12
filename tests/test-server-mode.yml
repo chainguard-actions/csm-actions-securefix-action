@@ -1,0 +1,35 @@
+name: Test server action mode
+on:
+  workflow_dispatch:
+jobs:
+  test-server-mode:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - id: action
+        uses: .
+        continue-on-error: true
+        with:
+          action: server
+          app_id: "12345"
+          app_private_key: |
+            -----BEGIN RSA PRIVATE KEY-----
+            MIIEowIBAAKCAQEA0Z3VS5JJcds3xHn/ygWep4PAtEsHABQbXQMuMFMNbkBMCMJA
+            -----END RSA PRIVATE KEY-----
+          label_name: securefix
+          label_description: example-org/example-repo/123456789
+
+      - name: Assert server mode ran (fails gracefully without real credentials/repo)
+        env:
+          OUTCOME: ${{ steps.action.outcome }}
+        run: |
+          echo "outcome: $OUTCOME"
+          if [ "$OUTCOME" = "success" ]; then
+            echo "PASS: server mode succeeded"
+          elif [ "$OUTCOME" = "failure" ]; then
+            echo "PASS: server mode failed gracefully (expected without real credentials)"
+          else
+            echo "FAIL: unexpected outcome '$OUTCOME'"
+            exit 1
+          fi

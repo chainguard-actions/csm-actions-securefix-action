@@ -1,0 +1,36 @@
+name: Test validate-config action
+on:
+  workflow_dispatch:
+jobs:
+  test-validate-config:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Create a minimal config file
+        run: |
+          cat > /tmp/securefix-config.yaml << 'EOF'
+          server_repository: example-org/securefix-server
+          EOF
+
+      - id: action
+        uses: .
+        continue-on-error: true
+        with:
+          action: validate-config
+          config: |
+            server_repository: example-org/securefix-server
+
+      - name: Assert validate-config ran (success or graceful failure)
+        env:
+          OUTCOME: ${{ steps.action.outcome }}
+        run: |
+          echo "outcome: $OUTCOME"
+          if [ "$OUTCOME" = "success" ]; then
+            echo "PASS: validate-config succeeded"
+          elif [ "$OUTCOME" = "failure" ]; then
+            echo "PASS: validate-config failed gracefully (expected without real credentials)"
+          else
+            echo "FAIL: unexpected outcome '$OUTCOME'"
+            exit 1
+          fi

@@ -1,0 +1,277 @@
+name: Fix Code securely
+description: Securefix Action
+inputs:
+  # common
+  action:
+    description: |
+      Action to run. One of "client", "validate-config", "prepare", "notify", "commit", "server".
+      If server_repository is set, defaults to "client".
+    required: false
+  app_id:
+    description: |
+      GitHub App ID.
+      Either client_id or app_id is required.
+    required: false
+  client_id:
+    description: |
+      GitHub App Client ID.
+      Either client_id or app_id is required.
+      client_id takes precedence when both are set.
+    required: false
+  app_private_key:
+    description: |
+      GitHub App Private Key.
+      Either app_private_key or aws_kms_key_id is required.
+    required: false
+  aws_kms_key_id:
+    description: |
+      Key ID, key ARN, alias name, or alias ARN of an AWS KMS key holding the
+      GitHub App private key.
+      Set this instead of app_private_key when the private key is stored in AWS
+      KMS and can never be exported.
+    required: false
+  aws_region:
+    description: |
+      The AWS region of the KMS key, which is also the region of the STS
+      endpoint when aws_role_to_assume is set.
+      It can be omitted when aws_kms_key_id is an ARN, which carries the region.
+      Otherwise it falls back to AWS_REGION or AWS_DEFAULT_REGION, and the
+      action fails when none of them says which region the key is in.
+    required: false
+  aws_role_to_assume:
+    description: |
+      ARN of the AWS IAM role to assume with the GitHub OIDC token.
+      The job needs the permission `id-token: write`.
+      The credentials are kept inside this action and are never exported, so
+      later steps of the job can't see them.
+      Leave this unset to read credentials from AWS_ACCESS_KEY_ID,
+      AWS_SECRET_ACCESS_KEY and AWS_SESSION_TOKEN instead, which is what
+      aws-actions/configure-aws-credentials exports.
+      Those environment variables are the only other source. A profile in
+      ~/.aws/credentials, IMDS on a self-hosted EC2 runner and the credentials
+      of an ECS or EKS task aren't read, so run
+      aws-actions/configure-aws-credentials first to use any of them.
+    required: false
+
+  outputs:
+    description: |
+      Prepare action's outputs
+    required: false
+  # client and commit
+  commit_message:
+    description: |
+      Commit message
+    required: false
+  # client and notify
+  pull_request_comment:
+    description: |
+      Pull request comment.
+      If this is set, a pull request comment is posted after a pull request is created.
+    required: false
+
+  # client
+  server_repository:
+    description: |
+      Server repository name
+    required: false
+  files:
+    description: |
+      Fixed files
+    required: false
+  use_git_ls_files:
+    description: |
+      If true, the action uses `git ls-files` to list committed files.
+    required: false
+    default: "true"
+  fail_if_changes:
+    description: |
+      If true, the action fails if there are changes.
+    required: false
+    default: "false"
+  repository:
+    description: |
+      A repository full name where a commit will be pushed.
+    required: false
+  branch:
+    description: |
+      A branch where a commit will be pushed.
+    required: false
+  root_dir:
+    description: |
+      A Git root directory where a commit will be pushed.
+    required: false
+  pull_request_title:
+    description: |
+      A pull request title.
+      To create a pull request, this is required.
+    required: false
+  pull_request_base_branch:
+    description: |
+      A pull request base branch.
+      To create a pull request, this is required.
+    required: false
+  pull_request_body:
+    description: |
+      A pull request body.
+    required: false
+  pull_request_labels:
+    description: |
+      Pull request labels.
+      Each label is separated by a newline.
+      Note that labels must exist in the repository.
+      This action doesn't create labels.
+    required: false
+  pull_request_draft:
+    description: |
+      Create a pull request as draft.
+    required: false
+    default: "false"
+  pull_request_reviewers:
+    description: |
+      Pull request reviewers.
+      Each reviewer is separated by a newline.
+    required: false
+  pull_request_team_reviewers:
+    description: |
+      Pull request team reviewers.
+      This requires the `members:read` permission.
+      Each reviewer is separated by a newline.
+    required: false
+  pull_request_assignees:
+    description: |
+      Pull request assignees.
+      Each assignee is separated by a newline.
+    required: false
+  project_owner:
+    description: |
+      Project owner where the pull request is added.
+    required: false
+  project_number:
+    description: |
+      Project number where the pull request is added.
+    required: false
+  project_id:
+    description: |
+      Project id where the pull request is added.
+    required: false
+  milestone_number:
+    description: |
+      Milestone number where the pull request is added.
+    required: false
+  automerge_method:
+    description: |
+      auto-merge method. One of "merge", "squash", or "rebase".
+      By default, auto-merge is disabled.
+    required: false
+  custom:
+    description: |
+      Custom parameter in JSON object format.
+      This is passed to the server side and output as the `custom` output of the prepare or server action.
+    required: false
+  # prepare
+  workflow_name:
+    description: |
+      Client Workflow name. If this is empty, the action does not check the workflow name.
+    required: false
+    default: securefix
+  allow_workflow_fix:
+    description: |
+      Either true or false. If true, the action allows the workflow to fix the code.
+    required: false
+    default: "false"
+  allow_members_read:
+    description: |
+      Either true or false. If true, the members:read permission is granted.
+    required: false
+    default: "false"
+  allow_organization_projects_write:
+    description: |
+      Either true or false. If true, the organization-projects:write permission is granted.
+    required: false
+    default: "false"
+
+  commit_error:
+    description: |
+      The output error of the commit action.
+    required: false
+
+  config:
+    description: |
+      YAML config to push other repositories and branches.
+    required: false
+  config_file:
+    description: |
+      A file path to YAML config.
+    required: false
+  label_name:
+    description: |
+      Label name to trigger the action.
+    required: false
+    default: ${{github.event.label.name}}
+  label_description:
+    description: |
+      Label description to trigger the action.
+      The format must be <repository owner>/<repository name>/<workflow run ID>.
+    required: false
+    default: ${{github.event.label.description}}
+  delete_label:
+    description: |
+      Either true or false. If true, the label is deleted.
+    required: false
+    default: "true"
+  github_token_to_delete_label:
+    description: |
+      GitHub token to delete the label.
+    required: false
+    default: "${{github.token}}"
+  # commit
+  # notify
+outputs:
+  # client
+  artifact_name:
+    description: |
+      The name of the uploaded artifact.
+  changed_files:
+    description: |
+      Changed files.
+  changed_files_from_root_dir:
+    description: |
+      Changed files from the root directory.
+  # prepare and server
+  branch:
+    description: |
+      The branch where the commit will be pushed.
+  client_repository:
+    description: |
+      The client repository full name.
+  create_pull_request:
+    description: |
+      JSON serialized pull request creation parameters.
+  fixed_files:
+    description: |
+      Newline-separated list of fixed files.
+  github_token:
+    description: |
+      GitHub App installation token for the destination repository.
+  metadata:
+    description: |
+      JSON serialized metadata from the client.
+  custom:
+    description: |
+      Custom parameter from the client in JSON object format.
+  push_repository:
+    description: |
+      The destination repository full name.
+  pull_request:
+    description: |
+      JSON serialized pull request data of the client's pull request.
+  new_pull_request:
+    description: |
+      JSON serialized pull request data of the newly created pull request.
+  workflow_run:
+    description: |
+      JSON serialized workflow run data.
+runs:
+  using: node24
+  main: dist/index.js
+  post: dist/index.js
