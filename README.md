@@ -17,6 +17,7 @@ Hardened by [Chainguard](https://www.chainguard.dev) from the upstream action at
 | v0.6.1-0 | [`v0.6.1-0`](https://github.com/chainguard-actions/csm-actions-securefix-action/tree/v0.6.1-0) | [`d5e43bf`](https://github.com/csm-actions/securefix-action/commit/d5e43bf611deb34cd05c766fbb982e3c5c5276a0) |
 | v0.6.1-1 | [`v0.6.1-1`](https://github.com/chainguard-actions/csm-actions-securefix-action/tree/v0.6.1-1) | [`b357480`](https://github.com/csm-actions/securefix-action/commit/b357480060f8b757723bb6168ccb58f3135fa774) |
 | v0.6.2 | [`v0.6.2`](https://github.com/chainguard-actions/csm-actions-securefix-action/tree/v0.6.2) | [`e0c41ad`](https://github.com/csm-actions/securefix-action/commit/e0c41ad42cb2c011143f37c073ce990dd404c0da) |
+| v0.6.3 | [`v0.6.3`](https://github.com/chainguard-actions/csm-actions-securefix-action/tree/v0.6.3) | [`1b770a7`](https://github.com/csm-actions/securefix-action/commit/1b770a7af0ec5e04517295b4e14c4b451359d550) |
 
 ## Privacy
 
